@@ -1,0 +1,35 @@
+{
+  "fields": {
+    "project": {
+      "key": "<prefix of JIRA tickets goes here>"
+    },
+    "issuetype": {
+      "name": "Bug"
+    },
+    "assignee": {
+      "id": "<id of bug assignee>"
+    },
+    "priority": {
+      "name": "High"
+    },
+    "labels": [
+      "web_automation"
+    ],
+    "summary": "issue summary",
+    "description": {
+      "content": [
+        {
+          "content": [
+            {
+              "text": "Issue description",
+              "type": "text"
+            }
+          ],
+          "type": "paragraph"
+        }
+      ],
+      "type": "doc",
+      "version": 1
+    }
+  }
+}

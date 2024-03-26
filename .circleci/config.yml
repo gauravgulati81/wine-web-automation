@@ -1,0 +1,102 @@
+default_node_image:
+  docker: &ref_0
+    - image: cimg/openjdk:21.0.2
+  working_directory: ~/repo
+  environment: &ref_1
+    MAVEN_OPTS: '-Xmx3200m'
+version: 2.1
+parameters:
+  notlog_timeout:
+    default: 20m
+    type: string
+jobs:
+  build:
+    docker: *ref_0
+    working_directory: ~/repo
+    environment: *ref_1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - 'v1-dependencies-{{ checksum "pom.xml" }}'
+            - v1-dependencies-
+      - run: 'mvn dependency:go-offline'
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: 'v1-dependencies-{{ checksum "pom.xml" }}'
+  Web_tests:
+    docker: *ref_0
+    working_directory: ~/repo
+    environment: *ref_1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - 'v1-dependencies-{{ checksum "pom.xml" }}'
+            - v1-dependencies-
+      - run:
+          name: Web Tests
+          command: >
+            echo "export BROWSER_NAME=chrome" >> $BASH_ENV; echo "export
+            PLATFORM=windows" >> $BASH_ENV; echo "export OS_VERSION=10" >>
+            $BASH_ENV; echo "export BROWSER_VERSION=latest" >> $BASH_ENV; source
+            $BASH_ENV;
+
+            chmod +x run_tests.sh;
+            ./run_tests.sh -t=Test2;
+          no_output_timeout: << pipeline.parameters.notlog_timeout >>
+      - store_test_results:
+          path: target
+      - store_artifacts:
+          path: target/
+
+  Web_uat_sprint_tests:
+    docker: *ref_0
+    working_directory: ~/repo
+    environment: *ref_1
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - 'v1-dependencies-{{ checksum "pom.xml" }}'
+            - v1-dependencies-
+      - run:
+          name: Web UAT Sprint Tests
+          command: >
+            echo "export BROWSER_NAME=chrome" >> $BASH_ENV; echo "export
+            PLATFORM=windows" >> $BASH_ENV; echo "export OS_VERSION=10" >>
+            $BASH_ENV; echo "export BROWSER_VERSION=latest" >> $BASH_ENV; source
+            $BASH_ENV;
+
+            ./run_tests.sh -t=Test2
+          no_output_timeout: << pipeline.parameters.notlog_timeout >>
+      - store_test_results:
+          path: target
+      - store_artifacts:
+          path: target/
+
+workflows:
+  version: 2.1
+  build_test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - /feature\/.*/
+      - Web_uat_sprint_tests:
+          requires:
+            - build
+
+  master_uat_build_test:
+#    when: << pipeline.parameters.master_uat_build_test >>
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - main
+      - Web_tests:
+          requires:
+            - build
