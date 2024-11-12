@@ -13,4 +13,8 @@ Feature: feature to test login functionality
   @Test2 @Test
   Scenario: Check whether the user is able to login
 
-    When the user is on home page
+    Given user is on login page
+    When user enters username and password
+    And clicks on login button
+#    And step fails
+    Then user is navigated to home page

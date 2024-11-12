@@ -45,7 +45,6 @@ public class HomePageSteps {
     @When("^the user is on home page$")
     public void the_user_is_on_home_page() {
         wait.until(ExpectedConditions.visibilityOf(homePageObjects.appLogo));
-        System.out.println("#####"+driver.getTitle());
         Assert.assertTrue("App logo is not displayed", homePageObjects.appLogo.isDisplayed());
         Assert.assertTrue("App is not on home page", driver.getCurrentUrl().equals(CommonUtils.getUrlUnderTest()));
     }
